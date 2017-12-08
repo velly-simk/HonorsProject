@@ -41,7 +41,6 @@ public:
 		_y = rhs.Y();
 		return *this;
 	}
-
 };
 
 // comparison operators
@@ -63,6 +62,7 @@ bool operator== (GraphNode2D lhs, GraphNode2D rhs) {
 }
 
 bool operator!= (GraphNode2D lhs, GraphNode2D rhs) { return !(lhs == rhs); }
+
 
 
 // Public functions
@@ -109,6 +109,12 @@ int GraphNode2D::Links(GraphNode2D ** &ret) {
 	}
 
 	return _nlink;
+}
+
+int compareGraphNode2D(GraphNode2D &lhs, GraphNode2D &rhs) {
+	if (lhs > rhs) return 1;
+	else if (rhs > lhs) return -1;
+	else return 0;
 }
 
 
