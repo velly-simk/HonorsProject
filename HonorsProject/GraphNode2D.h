@@ -25,6 +25,8 @@ public:
 	/* Char Data of node. */
 	char Data() const { return _data; }
 
+	void setData(const char &newData) { _data = newData; }
+
 	/* Add node to links of this Node, returns true on success. */
 	bool Link(GraphNode2D* &node);
 

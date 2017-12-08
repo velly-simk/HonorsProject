@@ -3,10 +3,10 @@
 #define AVLTREE_H
 #define _template template<class T>
 
-#include "BinaryTree2.h"
+#include "BinarySearchTree.h"
 
 _template
-class AVLTree : public BinaryTree<T> {
+class AVLTree : public BinarySearchTree<T> {
 protected:
 	struct AVLNode : protected BinaryTree<T>::BinaryNode<T> {
 		int _depth, 

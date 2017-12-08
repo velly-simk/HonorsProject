@@ -4,7 +4,7 @@
 #define _template template<class T>
 
 #include "Queue.h"
-#include "BinaryNode2.h"
+#include "BinaryNode.h"
 
 _template
 class BinaryTree {
@@ -33,8 +33,8 @@ public:
 
 	// abstract functions
 	virtual bool insert(T& item) = 0;
-	virtual bool remove(const T& item) = 0;
-	virtual bool getEntry(const T& item, T*& output) const = 0;
+	virtual bool remove(T& item) = 0;
+	virtual bool getEntry(T& item, T*& output) = 0;
 
 
 	void getLeftMost(T &item) const;
