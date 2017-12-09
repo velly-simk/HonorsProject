@@ -1,3 +1,11 @@
+/*
+	AVL Tree template
+
+	Fall 2017
+
+	Velly Simeonov
+*/
+
 #pragma once
 #ifndef AVLTREE_H
 #define AVLTREE_H

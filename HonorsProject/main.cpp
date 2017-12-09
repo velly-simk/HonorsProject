@@ -1,3 +1,11 @@
+/*
+	CIS 22C Honors Project main entry point
+
+	Fall 2017
+
+	Velly Simeonov
+*/
+
 #include <iostream>
 
 #include "Graph2D.h"

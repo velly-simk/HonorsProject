@@ -1,3 +1,11 @@
+/*
+	BST template
+
+	Fall 2017
+
+	Velly Simeonov
+*/
+
 #pragma once
 #ifndef BINARYSEARCHTREE_H
 #define BINARYSEARCHTREE_H

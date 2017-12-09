@@ -1,3 +1,11 @@
+/*
+	Binary Tree template
+
+	Fall 2017
+
+	Velly Simeonov
+*/
+
 #pragma once
 #ifndef BINARYTREE_H
 #define BINARYTREE_H

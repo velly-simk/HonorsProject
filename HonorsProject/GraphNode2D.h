@@ -1,3 +1,12 @@
+/*
+	GraphNode2D
+	not yet a template
+
+	Fall 2017
+
+	Velly Simeonov
+*/
+
 #pragma once
 #ifndef GRAPHNODE2D_H
 #define GRAPHNODE2D_H
