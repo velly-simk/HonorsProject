@@ -136,10 +136,11 @@ BinaryNode<T>* BinarySearchTree<T>::_removeNode(BinaryNode<T> * root, T &target,
 	int x = comp(target, *root->getData());
 
 	if (x > 0) {
-		_removeNode(root->getRightPtr(), target, success);
+		root->setRightPtr(_removeNode(root->getRightPtr(), target, success));
+
 	}
 	else if (x < 0) {
-		_removeNode(root->getLeftPtr(), target, success);
+		root->setLeftPtr(_removeNode(root->getLeftPtr(), target, success));
 	}
 	else {
 		root = _deleteNode(root);

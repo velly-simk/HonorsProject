@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
 		*z = new GraphNode2D(2, 1, 'a'),
 		*a = new GraphNode2D(3, 1, 'a');
 
-	AVLTree<GraphNode2D> avl = AVLTree<GraphNode2D>(compareGraphNode2D, true);
+	AVLTree<GraphNode2D> avl = AVLTree<GraphNode2D>(compareGraphNode2D);
 	
 	bst.insert(*x);
 	bst.insert(*y);

@@ -85,7 +85,7 @@ public:
 };
 
 /************************\
-Public Functions
+	Public Functions
 \************************/
 
 _template
@@ -119,7 +119,7 @@ bool AVLTree<T>::getEntry(T& item, T*& output) {
 
 
 /************************\
-Private Functions
+	Private Functions
 \************************/
 
 _template
@@ -156,10 +156,10 @@ AVLNode<T>* AVLTree<T>::_removeNode(AVLNode<T> * root, T &target, bool &success)
 	int x = comp(target, *root->getData());
 
 	if (x > 0) {
-		_removeNode(root->getRightPtr(), target, success);
+		root->setRightPtr(_removeNode(root->getRightPtr(), target, success));
 	}
 	else if (x < 0) {
-		_removeNode(root->getLeftPtr(), target, success);
+		root->setLeftPtr(_removeNode(root->getLeftPtr(), target, success));
 	}
 	else {
 		root = _deleteNode(root);
