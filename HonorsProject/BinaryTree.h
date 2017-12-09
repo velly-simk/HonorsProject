@@ -4,13 +4,46 @@
 #define _template template<class T>
 
 #include "Queue.h"
-#include "BinaryNode.h"
+
+_template
+class BinaryNode {
+protected:
+	void * _left;
+	void * _right;
+	T* _data;
+
+public:
+	BinaryNode(T& data) { _data = &data, _left = nullptr, _right = nullptr; }
+	BinaryNode(T*& data) { _data = data, _left = nullptr, _right = nullptr; }
+	BinaryNode(T*& data, BinaryNode * left, BinaryNode * right) {
+		_data = data;
+		_left = left;
+		_right = right;
+	}
+
+	virtual ~BinaryNode() { }
+
+	bool isLeaf() { return (_left == nullptr) && (_right == nullptr); }
+
+	inline virtual BinaryNode<T>* getLeftPtr() { return (BinaryNode<T>*) _left; }
+	inline virtual BinaryNode<T>* getRightPtr() { return (BinaryNode<T>*) _right; }
+	inline virtual void setLeftPtr(BinaryNode<T>* tPtr) { _left = (void*)tPtr; }
+	inline virtual void setRightPtr(BinaryNode<T>* tPtr) { _right = (void*)tPtr; }
+
+	T* getData() { return _data; }
+	void setData(T &item) { _data = &item; }
+	void setData(T* &item) { _data = item; }
+};
 
 _template
 class BinaryTree {
+private:
 protected:
-	BinaryNode<T>* _rootNodePtr;
 	int _count;
+	void* _rootNodePtr;
+
+	virtual BinaryNode<T>* getRootPtr() const { return (BinaryNode<T>*) _rootNodePtr; }
+	virtual void setRootPtr(BinaryNode<T>* newRoot) { _rootNodePtr = (void*)newRoot; }
 
 public:
 	virtual ~BinaryTree() { clear(); }
@@ -21,14 +54,14 @@ public:
 	// common functions
 	bool isEmpty() { return _count == 0; }
 	int count() { return _count; }
-	void clear() { _destroyTree(_rootNodePtr); _rootNodePtr = nullptr; }
+	void clear() { _destroyTree(getRootPtr()); setRootPtr(nullptr); }
 
 
 	// traversals
-	int preOrder(Queue<T*> & queue, const bool rightFirst = false) const;
-	int inOrder(Queue<T*> & queue, const bool rightFirst = false) const;
-	int postOrder(Queue<T*> & queue, const bool rightFirst = false) const;
-	int breadthOrder(Queue<T*> & queue) const;
+	int preOrder(Queue<T*> & queue, const bool &rightFirst = false) const;
+	int inOrder(Queue<T*> & queue, const bool &rightFirst = false) const;
+	int postOrder(Queue<T*> & queue, const bool &rightFirst = false) const;
+	int breadthOrder(Queue<T*> & queue, const bool &rightFirst = false) const;
 
 
 	// abstract functions
@@ -42,13 +75,13 @@ public:
 
 
 private:
-	BinaryNode<T>* _copyTree(const BinaryNode<T>* &root);
-	void _destroyTree(BinaryNode<T>* &root);
+	BinaryNode<T>* _copyTree(const BinaryNode<T>* root);
+	void _destroyTree(BinaryNode<T>* root);
 
 	// traversals
-	int _preOrder(Queue<T*> &queue, BinaryNode<T> *nodePtr, const bool &rightFirst) const;
-	int _inOrder(Queue<T*> &queue, BinaryNode<T> *nodePtr, const bool &rightFirst) const;
-	int _postOrder(Queue<T*> &queue, BinaryNode<T> *nodePtr, const bool &rightFirst) const;
+	bool _preOrder(Queue<T*> &queue, BinaryNode<T> *nodePtr, const bool &rightFirst) const;
+	bool _inOrder(Queue<T*> &queue, BinaryNode<T> *nodePtr, const bool &rightFirst) const;
+	bool _postOrder(Queue<T*> &queue, BinaryNode<T> *nodePtr, const bool &rightFirst) const;
 
 };
 
@@ -65,16 +98,16 @@ BinaryTree<T> & BinaryTree<T>::operator=(const BinaryTree<T> & sourceTree)
 		BinaryNode<T> *ptr;
 
 		Queue<BinaryNode<T>*> nodes;
-		nodes.enqueue(sourceTree._rootNodePtr);
+		nodes.enqueue(sourceTree->getRootPtr());
 
 		_count = sourceTree._count;
 
 		while (!nodes.isEmpty()) {
 			nodes.dequeue(ptr);
 			while (ptr) {
-				nodes.enqueue(ptr->_left);
-				nodes.enqueue(ptr->_right);
-				this->insert(ptr->_data);
+				nodes.enqueue(ptr->getLeftPtr());
+				nodes.enqueue(ptr->getRightPtr());
+				this->insert(ptr->getData());
 				nodes.dequeue(ptr);
 			}
 		}
@@ -83,37 +116,46 @@ BinaryTree<T> & BinaryTree<T>::operator=(const BinaryTree<T> & sourceTree)
 }
 
 _template
-int BinaryTree<T>::preOrder(Queue<T*> &queue, const bool rightFirst) const {
+int BinaryTree<T>::preOrder(Queue<T*> &queue, const bool &rightFirst) const {
 	if (!queue.isEmpty()) return 0;
-	return _preOrder(queue, _rootNodePtr, rightFirst);
+	return _preOrder(queue, getRootPtr(), rightFirst);
 }
 
 _template
-int BinaryTree<T>::inOrder(Queue<T*> &queue, const bool rightFirst) const {
+int BinaryTree<T>::inOrder(Queue<T*> &queue, const bool &rightFirst) const {
 	if (!queue.isEmpty()) return 0;
-	return _inOrder(queue, _rootNodePtr, rightFirst);
+	return _inOrder(queue, getRootPtr(), rightFirst);
 }
 
 _template
-int BinaryTree<T>::postOrder(Queue<T*> &queue, const bool rightFirst) const {
+int BinaryTree<T>::postOrder(Queue<T*> &queue, const bool &rightFirst) const {
 	if (!queue.isEmpty()) return 0;
-	return _postOrder(queue, _rootNodePtr, rightFirst);
+	return _postOrder(queue, getRootPtr(), rightFirst);
 }
 
 _template
 
-int BinaryTree<T>::breadthOrder(Queue<T*> &queue) const {
+int BinaryTree<T>::breadthOrder(Queue<T*> &queue, const bool &rightFirst) const {
 	Queue<BinaryNode<T>*> tmpQueue;
-	tmpQueue.enqueue(_rootNodePtr);
+	tmpQueue.enqueue(getRootPtr());
 
 	while (!tmpQueue.isEmpty()) {
-		BinaryNode<T>* tmpNode;
+		BinaryNode<T>* tmpNode, * first, * second;
 		tmpQueue.dequeue(tmpNode);
 
 		if (tmpNode) {
-			queue.enqueue(&tmpNode->_data);
-			tmpQueue.enqueue(tmpNode->_left);
-			tmpQueue.enqueue(tmpNode->_right);
+			if (rightFirst) {
+				first = tmpNode->getRightPtr();
+				second = tmpNode->getLeftPtr();
+			}
+			else {
+				first = tmpNode->getLeftPtr();
+				second = tmpNode->getRightPtr();
+			}
+
+			queue.enqueue(&tmpNode->getData());
+			tmpQueue.enqueue(first);
+			tmpQueue.enqueue(second);
 		}
 	}
 
@@ -121,21 +163,21 @@ int BinaryTree<T>::breadthOrder(Queue<T*> &queue) const {
 
 _template
 void BinaryTree<T>::getLeftMost(T &item) const {
-	BinaryNode<T>* nodePtr = _rootNodePtr, last;
+	BinaryNode<T>* nodePtr = getRootPtr(), last;
 
 	while (nodePtr != nullPtr) {
 		last = nodePtr;
-		nodePtr = nodePtr->_left;
+		nodePtr = nodePtr->getLeftPtr();
 	}
 }
 
 _template
 void BinaryTree<T>::getRightMost(T &item) const {
-	BinaryNode<T>* nodePtr = _rootNodePtr, last;
+	BinaryNode<T>* nodePtr = getRootPtr(), last;
 
 	while (nodePtr != nullPtr) {
 		last = nodePtr;
-		nodePtr = nodePtr->_right;
+		nodePtr = nodePtr->getRightPtr();
 	}
 }
 
@@ -144,29 +186,30 @@ void BinaryTree<T>::getRightMost(T &item) const {
 \************************/
 
 _template
-BinaryNode<T>* BinaryTree<T>::_copyTree(const BinaryNode<T>* &startNodePtr) {
+BinaryNode<T>* BinaryTree<T>::_copyTree(const BinaryNode<T>* startNodePtr) {
 	BinaryNode<T> * node = nullptr;
 	if (startNodePtr != nullptr) {
-		node = new BinaryNode<T>(startNodePtr->_data,
-			_copyTree(startNodePtr->_left),
-			_copyTree(startNodePtr->_right));
+		T* data = startNodePtr->getData();
+		node = new BinaryNode<T>(data,
+			startNodePtr->getLeftPtr(),
+			startNodePtr->getRightPtr());
 	}
 }
 
 _template
-void BinaryTree<T>::_destroyTree(BinaryNode<T>* &targetDataNodePtr) {
+void BinaryTree<T>::_destroyTree(BinaryNode<T>* targetDataNodePtr) {
 	if (targetDataNodePtr == nullptr) return;
 
-	BinaryNode<T> * curr = _rootNodePtr;
+	BinaryNode<T> * curr = getRootPtr();
 
 	// Locate Start
 
-	while (curr != nullptr && curr->_data != targetDataNodePtr->_data) { // stop on nullptr or found
-		if (targetDataNodePtr->_data < curr->_data) {
-			curr = curr->_left;
+	while (curr != nullptr && curr->getData() != targetDataNodePtr->getData()) { // stop on nullptr or found
+		if (targetDataNodePtr->getData() < curr->getData()) {
+			curr = curr->getLeftPtr();
 		}
 		else {
-			curr = curr->_right;
+			curr = curr->getRightPtr();
 		}
 	}
 
@@ -183,8 +226,8 @@ void BinaryTree<T>::_destroyTree(BinaryNode<T>* &targetDataNodePtr) {
 	while (!nodeQueue.isEmpty()) {
 		nodeQueue.dequeue(curr);
 		if (curr) {
-			nodeQueue.enqueue(curr->_left);
-			nodeQueue.enqueue(curr->_right);
+			nodeQueue.enqueue(curr->getLeftPtr());
+			nodeQueue.enqueue(curr->getRightPtr());
 			delete curr;
 			--_count;
 		}
@@ -193,74 +236,70 @@ void BinaryTree<T>::_destroyTree(BinaryNode<T>* &targetDataNodePtr) {
 }
 
 _template
-int BinaryTree<T>::_preOrder(Queue<T*> &queue, BinaryNode<T> *nodePtr, const bool &rightFirst) const { // to do
+bool BinaryTree<T>::_preOrder(Queue<T*> &queue, BinaryNode<T> *nodePtr, const bool &rightFirst) const { // to do
 	if (nodePtr != 0)
 	{
-		BinaryNode<T>* first = nullptr, *second = nullptr;
+		BinaryNode<T>* first = nodePtr->getLeftPtr(), *second = nodePtr->getRightPtr();
+
 		if (rightFirst) {
-			first = nodePtr->_right;
-			second = nodePtr->_left;
+			first = second;
+			second = nodePtr->getLeftPtr();
 		}
-		else {
-			first = nodePtr->_left;
-			second = nodePtr->_right;
-		}
-		T *item = nodePtr->_data;
+
+		T *item = nodePtr->getData();
 		queue.enqueue(item);
 
 		_preOrder(queue, first, rightFirst);
 		
 		_preOrder(queue, second, rightFirst);
-		return 1;
+		return true;
 	}
-	return 0;
+	return false;
 }
 
 _template
-int BinaryTree<T>::_inOrder(Queue<T*> &queue, BinaryNode<T> *nodePtr, const bool &rightFirst) const { // to do
+bool BinaryTree<T>::_inOrder(Queue<T*> &queue, BinaryNode<T> *nodePtr, const bool &rightFirst) const { // to do
 	if (nodePtr != 0)
 	{
-		BinaryNode<T>* first = nullptr, *second = nullptr;
+		BinaryNode<T>* first = nodePtr->getLeftPtr(), *second = nodePtr->getRightPtr();
+
 		if (rightFirst) {
-			first = nodePtr->_right;
-			second = nodePtr->_left;
+			first = second;
+			second = nodePtr->getLeftPtr();
 		}
-		else {
-			first = nodePtr->_left;
-			second = nodePtr->_right;
-		}
+
 		_inOrder(queue, first, rightFirst);
 
-		T* item = nodePtr->_data;
+		T* item = nodePtr->getData();
 		queue.enqueue(item);
 
 		_inOrder(queue, second, rightFirst);
-		return 1;
+		return true;
 	}
-	return 0;
+	return false;
 }
 
 _template
-int BinaryTree<T>::_postOrder(Queue<T*> &queue, BinaryNode<T> *nodePtr, const bool &rightFirst) const { // to do
+bool BinaryTree<T>::_postOrder(Queue<T*> &queue, BinaryNode<T> *nodePtr, const bool &rightFirst) const { // to do
 	if (nodePtr != 0)
 	{
-		BinaryNode<T>* first = nullptr, *second = nullptr;
+		BinaryNode<T>* first = nodePtr->getLeftPtr(), *second = nodePtr->getRightPtr();
+
 		if (rightFirst) {
-			first = nodePtr->_right;
-			second = nodePtr->_left;
+			first = second;
+			second = nodePtr->getLeftPtr();
 		}
-		else {
-			first = nodePtr->_left;
-			second = nodePtr->_right;
-		}
+
 		_postOrder(queue, first, rightFirst);
 
 		_postOrder(queue, second, rightFirst);
 
-		T* item = nodePtr->_data;
+		T* item = nodePtr->getData();
 		queue.enqueue(item);
-		return 1;
+		return true;
 	}
-	return 0;
+	return false;
 }
+
+
 #endif // !BINARYTREE_H

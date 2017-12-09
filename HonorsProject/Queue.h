@@ -4,7 +4,6 @@
 #ifndef DYNAMICQUEUE_H
 #define DYNAMICQUEUE_H
 #include <iostream>
-using namespace std;
 
 template <class T>
 class Queue

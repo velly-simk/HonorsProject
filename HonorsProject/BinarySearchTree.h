@@ -15,24 +15,24 @@ protected:
 
 private:
 	/* insert node into tree */
-	BinaryNode<T>* _insert(BinaryNode<T> * &root, BinaryNode<T> * &newNode);
+	BinaryNode<T>* _insert(BinaryNode<T> * root, BinaryNode<T> * newNode);
 
 	/* locate and delete node from tree */
-	BinaryNode<T>* _removeNode(BinaryNode<T> * &root, T &target, bool &success);
+	BinaryNode<T>* _removeNode(BinaryNode<T> * root, T &target, bool &success);
 
 	/* delete node called by remove*/
-	BinaryNode<T>* _deleteNode(BinaryNode<T> * &targetNode);
+	BinaryNode<T>* _deleteNode(BinaryNode<T> * targetNode);
 
 	/* remove left most node of tree from root */
-	BinaryNode<T>* _removeLeftMostNode(BinaryNode<T> * &root, T * &successor);
+	BinaryNode<T>* _removeLeftMostNode(BinaryNode<T> * root, T * &successor);
 
 	/* locate node with target as data*/
-	BinaryNode<T>* _findNode(BinaryNode<T> * &root, T &target);
+	BinaryNode<T>* _findNode(BinaryNode<T> * root, T &target);
 
 public:
 	/* normal constructor */
 	BinarySearchTree(int compareFunction(T &lhs, T &rhs), bool duplicates = false) {
-		this->_rootNodePtr = nullptr;
+		this->setRootPtr(nullptr);
 		this->_count = 0;
 		comp = compareFunction;
 		this->_allowDuplicates = duplicates;
@@ -40,7 +40,7 @@ public:
 
 	/* copy constructor */
 	BinarySearchTree(const BinarySearchTree &tree) {
-		this->_rootNodePtr = this->_copyTree(tree._rootNodePtr);
+		this->setRootPtr(this->_copyTree(tree.getRootPtr()));
 		this->count = tree._count;
 		this->comp = tree.comp;
 		this->_allowDuplicates = tree._allowDuplicates;
@@ -64,7 +64,7 @@ _template
 bool BinarySearchTree<T>::insert(T& item) {
 	BinaryNode<T> * node = new BinaryNode<T>(item);
 	int tmp = _count;
-	_insert(this->_rootNodePtr, node);
+	this->setRootPtr(_insert(this->getRootPtr(), node));
 	return tmp != _count;
 }
 
@@ -72,7 +72,7 @@ _template
 bool BinarySearchTree<T>::remove(T& item) {
 	bool success = false;
 
-	this->_rootNodePtr = _removeNode(this->_rootNodePtr, item, success);
+	this->setRootPtr(_removeNode(this->getRootPtr(), item, success));
 
 	return success;
 }
@@ -80,11 +80,11 @@ bool BinarySearchTree<T>::remove(T& item) {
 _template
 bool BinarySearchTree<T>::getEntry(T& item, T*& output) {
 	BinaryNode<T> * node = nullptr;
-	node = _findNode(_rootNodePtr, item);
+	node = _findNode(this->getRootPtr(), item);
 
 	if (node == nullptr) return false;
 
-	output = node->_data;
+	output = node->getData();
 
 	return true;
 }
@@ -95,97 +95,107 @@ bool BinarySearchTree<T>::getEntry(T& item, T*& output) {
 \************************/
 
 _template
-BinaryNode<T>* BinarySearchTree<T>::_insert(BinaryNode<T> * &root, BinaryNode<T> * &newNode) {
+BinaryNode<T>* BinarySearchTree<T>::_insert(BinaryNode<T> * root, BinaryNode<T> * newNode) {
 	if (root == nullptr) {
 		++this->_count;
 		return root = newNode;
 	}
 	else {
-		int x = comp(*newNode->_data, *root->_data);
-		if (x > 0)
-			return _insert(root->_right, newNode);
-		else if (x < 0)
-			return _insert(root->_left, newNode);
-		else if (x == 0 && this->_allowDuplicates)
-			return _insert(root->_right, newNode);
-		else return nullptr;
+		int x = comp(*newNode->getData(), *root->getData());
+
+		if (x > 0) {
+			root->setRightPtr(_insert(root->getRightPtr(), newNode));
+			return root;
+		}
+		else if (x < 0) {
+			root->setLeftPtr(_insert(root->getLeftPtr(), newNode));
+			return root;
+		}
+		else if (x == 0 && this->_allowDuplicates) {
+			root->setRightPtr(_insert(root->getRightPtr(), newNode));
+			return root;
+		}
+		else return root;
 	}
 }
 
 _template
-BinaryNode<T>* BinarySearchTree<T>::_removeNode(BinaryNode<T> * &root, T &target, bool &success) {
+BinaryNode<T>* BinarySearchTree<T>::_removeNode(BinaryNode<T> * root, T &target, bool &success) {
 	if (root == nullptr) {
 		success = false;
 		return nullptr;
 	}
-	int x = comp(target, *root->_data);
+	int x = comp(target, *root->getData());
+
 	if (x > 0) {
-		_removeNode(root->_right, target, success);
+		_removeNode(root->getRightPtr(), target, success);
 	}
 	else if (x < 0) {
-		_removeNode(root->_left, target, success);
+		_removeNode(root->getLeftPtr(), target, success);
 	}
 	else {
 		root = _deleteNode(root);
 		success = true;
+		--_count;
 	}
 	return root;
 }
 
 _template
-BinaryNode<T>* BinarySearchTree<T>::_deleteNode(BinaryNode<T> * &targetNode) {
+BinaryNode<T>* BinarySearchTree<T>::_deleteNode(BinaryNode<T> * targetNode) {
+	BinaryNode<T>* tmpPtr;
 	if (targetNode->isLeaf()) {
 		delete targetNode;
 		targetNode = nullptr;
 		return targetNode;
 	}
-	else if (targetNode->_left == nullptr) {
-		BinaryNode<T>* tmp = targetNode->_right;
+	else if (targetNode->getLeftPtr() == nullptr) {
+		tmpPtr = targetNode->getRightPtr();
 		delete targetNode;
 		targetNode = 0;
-		return tmp;
+		return tmpPtr;
 	}
-	else if (targetNode->_right == nullptr) {
-		BinaryNode<T> * tmp = targetNode->_left;
+	else if (targetNode->getRightPtr() == nullptr) {
+		tmpPtr = targetNode->getLeftPtr();
 		delete targetNode;
 		targetNode = 0;
-		return tmp;
+		return tmpPtr;
 	}
 	else {
 		T* val;
-		targetNode->_right = _removeLeftMostNode( targetNode->_right, val);
-		targetNode->_data = val;
+		targetNode->setRightPtr(_removeLeftMostNode(targetNode->getRightPtr(), val));
+		targetNode->setData(val);
 		return targetNode;
 	}
 }
 
 _template
 /* remove left most node of tree from root */
-BinaryNode<T>* BinarySearchTree<T>::_removeLeftMostNode(BinaryNode<T> * &root, T * &successor) {
-	if (root->_left == nullptr)
+BinaryNode<T>* BinarySearchTree<T>::_removeLeftMostNode(BinaryNode<T> * root, T * &successor) {
+	if (root->getLeftPtr() == nullptr)
 	{
-		successor = root->_data;
+		successor = root->getData();
 		return _deleteNode(root);
 	}
 	else
 	{
-		root->_left = _removeLeftMostNode(root->_left, successor);
+		root->setLeftPtr(_removeLeftMostNode(root->getLeftPtr(), successor));
 		return root;
 	}
 }
 
 _template
-BinaryNode<T>* BinarySearchTree<T>::_findNode(BinaryNode<T>* &root, T &target) {
+BinaryNode<T>* BinarySearchTree<T>::_findNode(BinaryNode<T>* root, T &target) {
 	if (root == nullptr) {
 		return nullptr;
 	}
 	else {
-		int x = comp(target, *root->_data);
+		int x = comp(target, *root->getData());
 		if ( x > 0 ) {
-			return _findNode(root->_right, target);
+			return _findNode(root->getRightPtr(), target);
 		}
 		else if (x < 0) {
-			return _findNode(root->_left, target);
+			return _findNode(root->getLeftPtr(), target);
 		}
 		else {
 			return root;
