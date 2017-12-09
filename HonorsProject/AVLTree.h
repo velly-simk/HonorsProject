@@ -59,20 +59,10 @@ private:
 
 public:
 	/* normal constructor */
-	AVLTree(int compareFunction(T &lhs, T &rhs), bool duplicates = false) {
-		this->setRootPtr(nullptr);
-		this->_count = 0;
-		comp = compareFunction;
-		this->_allowDuplicates = duplicates;
-	}
+	AVLTree(int compareFunction(T &lhs, T &rhs), bool duplicates = false) : BinaryTree(compareFunction,duplicates) { }
 
 	/* copy constructor */
-	AVLTree(const AVLTree &tree) {
-		this->setRootPtr(this->_copyTree(tree.getRootPtr()));
-		this->count = tree._count;
-		this->comp = tree.comp;
-		this->_allowDuplicates = tree._allowDuplicates;
-	}
+	AVLTree(const AVLTree &tree) : BinaryTree(tree) { }
 
 	/* insert item to tree */
 	bool insert(T& item);
