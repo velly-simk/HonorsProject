@@ -142,7 +142,6 @@ int BinaryTree<T>::postOrder(Queue<T*> &queue, const bool &rightFirst) const {
 }
 
 _template
-
 int BinaryTree<T>::breadthOrder(Queue<T*> &queue, const bool &rightFirst) const {
 	Queue<BinaryNode<T>*> tmpQueue;
 	tmpQueue.enqueue(getRootPtr());
@@ -161,12 +160,12 @@ int BinaryTree<T>::breadthOrder(Queue<T*> &queue, const bool &rightFirst) const 
 				second = tmpNode->getRightPtr();
 			}
 
-			queue.enqueue(&tmpNode->getData());
+			queue.enqueue(tmpNode->getData());
 			tmpQueue.enqueue(first);
 			tmpQueue.enqueue(second);
 		}
 	}
-
+	return 0;
 }
 
 _template

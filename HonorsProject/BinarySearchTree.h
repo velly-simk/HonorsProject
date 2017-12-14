@@ -179,7 +179,6 @@ BinaryNode<T>* BinarySearchTree<T>::_deleteNode(BinaryNode<T> * targetNode) {
 }
 
 _template
-/* remove left most node of tree from root */
 BinaryNode<T>* BinarySearchTree<T>::_removeLeftMostNode(BinaryNode<T> * root, T * &successor) {
 	if (root->getLeftPtr() == nullptr)
 	{

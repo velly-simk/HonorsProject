@@ -13,10 +13,10 @@
 
 #include "BinaryTree.h"
 
+#include <iostream>
+
 _template
 class AVLNode : public BinaryNode<T> {
-private:
-	short _balanceFactor = 0;
 public:
 	AVLNode(T& data) : BinaryNode<T>(data) { }
 	AVLNode(T*& data) : BinaryNode<T>(data) { }
@@ -28,6 +28,8 @@ public:
 	AVLNode<T>* getRightPtr() { return (AVLNode<T>*) _right; }
 	void setLeftPtr(AVLNode<T>* tPtr) { _left = (void*)tPtr; }
 	void setRightPtr(AVLNode<T>* tPtr) { _right = (void*)tPtr; }
+
+	int _depth = 1;
 };
 
 _template
@@ -36,7 +38,7 @@ protected:
 	/* comp function returns [-1,1] ex: comp(int a, int b) returns 1 if a>b, -1 if b>a, and 0 if a == b */
 	int(*comp)(T & lhs, T & rhs);
 
-	bool _allowDuplicates;
+	bool _allowDuplicates = false;
 
 	AVLNode<T>* getRootPtr() { return (AVLNode<T>*) _rootNodePtr; }
 	void setRootPtr(AVLNode<T>* newRoot) { _rootNodePtr = (void*)newRoot; }
@@ -57,12 +59,30 @@ private:
 	/* locate node with target as data*/
 	AVLNode<T>* _findNode(AVLNode<T> * root, T &target);
 
+	void _depthResolution(AVLNode<T> * &root);
+
+	AVLNode<T>* _leftRotation(AVLNode<T> * unbalancedNode);
+	AVLNode<T>* _rightRotation(AVLNode<T> * unbalancedNode);
+	void _balance(AVLNode<T> * & node);
+	int _balFactor(AVLNode<T> * node);
+
 public:
 	/* normal constructor */
-	AVLTree(int compareFunction(T &lhs, T &rhs), bool duplicates = false) : BinaryTree(compareFunction,duplicates) { }
-
+//	AVLTree(int compareFunction(T &lhs, T &rhs), bool duplicates = false): BinarySearchTree<T>(compareFunction,duplicates) { }
+	AVLTree(int compareFunction(T &lhs, T &rhs), bool duplicates = false) {
+		this->setRootPtr(nullptr);
+		this->_count = 0;
+		comp = compareFunction;
+		this->_allowDuplicates = duplicates;
+	}
 	/* copy constructor */
-	AVLTree(const AVLTree &tree) : BinaryTree(tree) { }
+//	AVLTree(const AVLTree &tree) : BinarySearchTree<T>(tree) { }
+	AVLTree(const AVLTree &tree) {
+		this->setRootPtr(this->_copyTree(tree.getRootPtr()));
+		this->count = tree._count;
+		this->comp = tree.comp;
+		this->_allowDuplicates = tree._allowDuplicates;
+	}
 
 	/* insert item to tree */
 	bool insert(T& item);
@@ -72,6 +92,8 @@ public:
 
 	/* get item*/
 	bool getEntry(T& item, T*& output);
+
+	void printTree();
 };
 
 /************************\
@@ -107,6 +129,25 @@ bool AVLTree<T>::getEntry(T& item, T*& output) {
 	return true;
 }
 
+_template
+void AVLTree<T>::printTree() {
+	Queue<AVLNode<T>*> nodeQueue;
+	AVLNode<T> * tmp;
+
+	nodeQueue.enqueue((AVLNode<T>*)_rootNodePtr);
+
+	while (!nodeQueue.isEmpty()) {
+		nodeQueue.dequeue(tmp);
+		if (tmp != nullptr) {
+			nodeQueue.enqueue(tmp->getLeftPtr());
+			nodeQueue.enqueue(tmp->getRightPtr());
+			std::cout << "Depth :" << tmp->_depth << std::endl;
+		}
+	}
+
+
+}
+
 
 /************************\
 	Private Functions
@@ -123,14 +164,20 @@ AVLNode<T>* AVLTree<T>::_insert(AVLNode<T> * root, AVLNode<T> * newNode) {
 
 		if (x > 0) {
 			root->setRightPtr(_insert(root->getRightPtr(), newNode));
+			_depthResolution(root);
+			_balance(root);
 			return root;
 		}
 		else if (x < 0) {
 			root->setLeftPtr(_insert(root->getLeftPtr(), newNode));
+			_depthResolution(root);
+			_balance(root);
 			return root;
 		}
 		else if (x == 0 && this->_allowDuplicates) {
 			root->setRightPtr(_insert(root->getRightPtr(), newNode));
+			_depthResolution(root);
+			_balance(root);
 			return root;
 		}
 		else return root;
@@ -147,12 +194,18 @@ AVLNode<T>* AVLTree<T>::_removeNode(AVLNode<T> * root, T &target, bool &success)
 
 	if (x > 0) {
 		root->setRightPtr(_removeNode(root->getRightPtr(), target, success));
+		_depthResolution(root);
+		_balance(root);
 	}
 	else if (x < 0) {
 		root->setLeftPtr(_removeNode(root->getLeftPtr(), target, success));
+		_depthResolution(root);
+		_balance(root);
 	}
 	else {
 		root = _deleteNode(root);
+		_depthResolution(root);
+		_balance(root);
 		success = true;
 		--_count;
 	}
@@ -188,7 +241,6 @@ AVLNode<T>* AVLTree<T>::_deleteNode(AVLNode<T> * targetNode) {
 }
 
 _template
-/* remove left most node of tree from root */
 AVLNode<T>* AVLTree<T>::_removeLeftMostNode(AVLNode<T> * root, T * &successor) {
 	if (root->getLeftPtr() == nullptr)
 	{
@@ -198,6 +250,8 @@ AVLNode<T>* AVLTree<T>::_removeLeftMostNode(AVLNode<T> * root, T * &successor) {
 	else
 	{
 		root->setLeftPtr(_removeLeftMostNode(root->getLeftPtr(), successor));
+		_depthResolution(root);
+		_balance(root);
 		return root;
 	}
 }
@@ -221,5 +275,62 @@ AVLNode<T>* AVLTree<T>::_findNode(AVLNode<T>* root, T &target) {
 	}
 }
 
+_template
+void AVLTree<T>::_depthResolution(AVLNode<T> * &root) {
+	int x = 0, y = 0;
+	if (root->getLeftPtr() != nullptr)
+		x = root->getLeftPtr()->_depth;
+	if (root->getRightPtr() != nullptr)
+		y = root->getRightPtr()->_depth;
+
+	root->_depth = (x > y ? x : y) + 1;
+}
+
+_template
+AVLNode<T> * AVLTree<T>::_leftRotation(AVLNode<T> * unbalancedNode) {
+	AVLNode<T> * rightNode = unbalancedNode->getRightPtr();
+	unbalancedNode->setRightPtr(rightNode->getLeftPtr());
+	rightNode->setLeftPtr(unbalancedNode);
+
+	return rightNode;
+}
+
+_template
+AVLNode<T> * AVLTree<T>::_rightRotation(AVLNode<T> * unbalancedNode) {
+	AVLNode<T> * leftNode = unbalancedNode->getLeftPtr();
+	unbalancedNode->setLeftPtr(leftNode->getRightPtr());
+	leftNode->setRightPtr(unbalancedNode);
+
+	return leftNode;
+}
+
+_template
+void AVLTree<T>::_balance(AVLNode<T> * & node) {
+
+	if (_balFactor(node) > 1) {
+		if (_balFactor(node->getLeftPtr()) < 0) {
+			node->setLeftPtr(_leftRotation(node->getLeftPtr()));
+		}
+		node = _rightRotation(node);
+	}
+	else if (_balFactor(node) < -1) {
+		if (_balFactor(node->getRightPtr()) > 0) {
+			node->setRightPtr(_rightRotation(node->getRightPtr()));
+		}
+		node = _leftRotation(node);
+	}
+
+
+}
+
+_template
+int AVLTree<T>::_balFactor(AVLNode<T> * node) {
+	int x = 0, y = 0;
+	if (node->getLeftPtr() != nullptr)
+		x = node->getLeftPtr()->_depth;
+	if (node->getRightPtr() != nullptr)
+		y = node->getRightPtr()->_depth;
+	return  x - y;
+}
 
 #endif // !AVLTREE_H
