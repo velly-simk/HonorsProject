@@ -7,78 +7,78 @@
 */
 
 #include <iostream>
+#include <cstdio>
+#include <string>
+#include <fstream>
 
 #include "Graph2D.h"
-#include "AVLTree.h"
 
 using namespace std;
 
-//void printBST(BinarySearchTree<GraphNode2D> &bst);
 void printAVL(AVLTree<GraphNode2D> &avl);
-
 
 int main(int argc, char *argv[])
 {
-	GraphNode2D* x = new GraphNode2D(1, 1, 'a'),
-		*y = new GraphNode2D(1, 2, 'a'),
-		*z = new GraphNode2D(2, 1, 'a'),
-		*a = new GraphNode2D(3, 1, 'a');
+	ifstream inFile;
+	inFile.open("t4.txt", ifstream::in);
+	char ** inputArr = nullptr;
+	int x, y;
 
-	AVLTree<GraphNode2D> avl = AVLTree<GraphNode2D>(compareGraphNode2D, true);
+	/* transform file into 2D array of characters*/
+	if (inFile.is_open()) {
+		string tmp;
+		size_t offs;
+		// get x and y size
+		getline(inFile, tmp);
+		y = stoi(tmp, &offs, 10);
+		tmp = tmp.substr(offs);
+		x = stoi(tmp, NULL, 10);
 
-	avl.insert(*x);
-	avl.insert(*y);
-	avl.insert(*z);
-	avl.insert(*a);
-	avl.insert(*y);
-	avl.insert(*z);
-	avl.insert(*a);
-	avl.insert(*y);
-	avl.insert(*x);
-	avl.insert(*y);
-	avl.insert(*z);
+		// allocate memory
+		inputArr = new char*[y];
+		for (int i = 0; i < y; ++i)
+			inputArr[i] = new char[x];
 
+		// parse lines
+		for (int i = 0; i < y; ++i) {
+			getline(inFile, tmp);
+			for (int j = 0; j < x; ++j) {
+				inputArr[i][j] = tmp.at(j);
+			}
+		}
+		inFile.close();
+	}
+
+
+	for (int i = 0; i < y; ++i) {
+		for (int j = 0; j < x; ++j) {
+			cout << inputArr[i][j] << " ";
+		}
+		cout << endl;
+	}
+	/*
+	const int x_size = 10, y_size = 10;
+	GraphNode2D arr[y_size][x_size];
+	AVLTree<GraphNode2D> avl = AVLTree<GraphNode2D>(compareGraphNode2D);
+	
+	for (int y = 0; y < y_size; ++y) {
+		for (int x = 0; x < x_size; ++x) {
+			arr[y][x] = GraphNode2D(x, y, 'b');
+			avl.insert(arr[y][x]);
+		}
+	}
 
 	printAVL(avl);
-	avl.printTree();
-
-
-	avl.remove(*z);
-	printAVL(avl);
-	avl.printTree();
-
+	avl.printBreadthOrderDepths();
+	*/
 	getchar();
     return 0;
 }
-/*
-void printBST(BinarySearchTree<GraphNode2D> &bst) {
-	Queue<GraphNode2D*> aaa;
 
-	bst.preOrder(aaa);
-
-	cout << "Pre Order : \n";
-	while (!aaa.isEmpty()) {
-		GraphNode2D * a;
-		aaa.dequeue(a);
-		cout << a->X() << " " << a->Y() << " " << a->Data() << endl;
-	}
-	
-	cout << "\nIn Order:\n";
-	bst.inOrder(aaa);
-
-	while (!aaa.isEmpty()) {
-		GraphNode2D * a;
-		aaa.dequeue(a);
-		cout << a->X() << " " << a->Y() << " " << a->Data() << endl;
-	}
-	
-	cout << endl;
-}
-*/
 void printAVL(AVLTree<GraphNode2D> &avl) {
 	Queue<GraphNode2D*> aaa;
 	GraphNode2D * a;
-
+/*
 	avl.preOrder(aaa);
 
 	cout << "Pre Order : \n";
@@ -94,7 +94,7 @@ void printAVL(AVLTree<GraphNode2D> &avl) {
 		aaa.dequeue(a);
 		cout << a->X() << " " << a->Y() << " " << a->Data() << endl;
 	}
-
+	*/
 	avl.breadthOrder(aaa);
 
 	cout << "\nBreadth Order : \n";

@@ -78,12 +78,11 @@ public:
 	virtual bool getEntry(T& item, T*& output) = 0;
 
 
-	void getLeftMost(T &item) const;
-	void getRightMost(T &item) const;
+	void getLeftMost(T* &item) const;
+	void getRightMost(T* &item) const;
 
 
 private:
-	BinaryNode<T>* _copyTree(const BinaryNode<T>* root);
 	void _destroyTree(BinaryNode<T>* root);
 
 	// traversals
@@ -169,17 +168,17 @@ int BinaryTree<T>::breadthOrder(Queue<T*> &queue, const bool &rightFirst) const 
 }
 
 _template
-void BinaryTree<T>::getLeftMost(T &item) const {
-	BinaryNode<T>* nodePtr = getRootPtr(), last;
+void BinaryTree<T>::getLeftMost(T* &item) const {
+	BinaryNode<T>* nodePtr = getRootPtr(), *last;
 
-	while (nodePtr != nullPtr) {
+	while (nodePtr != nullptr) {
 		last = nodePtr;
 		nodePtr = nodePtr->getLeftPtr();
 	}
 }
 
 _template
-void BinaryTree<T>::getRightMost(T &item) const {
+void BinaryTree<T>::getRightMost(T* &item) const {
 	BinaryNode<T>* nodePtr = getRootPtr(), last;
 
 	while (nodePtr != nullPtr) {
@@ -191,17 +190,6 @@ void BinaryTree<T>::getRightMost(T &item) const {
 /************************\
 	Private Functions
 \************************/
-
-_template
-BinaryNode<T>* BinaryTree<T>::_copyTree(const BinaryNode<T>* startNodePtr) {
-	BinaryNode<T> * node = nullptr;
-	if (startNodePtr != nullptr) {
-		T* data = startNodePtr->getData();
-		node = new BinaryNode<T>(data,
-			startNodePtr->getLeftPtr(),
-			startNodePtr->getRightPtr());
-	}
-}
 
 _template
 void BinaryTree<T>::_destroyTree(BinaryNode<T>* targetDataNodePtr) {

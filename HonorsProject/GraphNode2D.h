@@ -16,9 +16,14 @@ private:
 	char _data;
 	int _x, _y, _nlink = 0;
 	GraphNode2D * _links[4] = { nullptr };
-	bool _processed = false;
+	bool _processedFlag = false;
 
 public:
+	GraphNode2D() {
+		_x = 0;
+		_y = 0;
+		_data = '0';
+	}
 	GraphNode2D(int x, int y, char data) {
 		_x = x;
 		_y = y;
@@ -35,6 +40,9 @@ public:
 	char Data() const { return _data; }
 
 	void setData(const char &newData) { _data = newData; }
+
+	bool getFlag() { return _processedFlag; }
+	void setFlag(bool status) { _processedFlag = status; }
 
 	/* Add node to links of this Node, returns true on success. */
 	bool Link(GraphNode2D* &node);
@@ -56,78 +64,19 @@ public:
 
 // comparison operators
 
-bool operator< (GraphNode2D lhs, GraphNode2D rhs) {
-	if (lhs.Y() == rhs.Y())	return lhs.X() < rhs.X();
-	return lhs.Y() < rhs.Y();
-}
+bool operator< (GraphNode2D lhs, GraphNode2D rhs);
 
-bool operator> (GraphNode2D lhs, GraphNode2D rhs) { return rhs < lhs; }
+bool operator> (GraphNode2D lhs, GraphNode2D rhs);
 
-bool operator<= (GraphNode2D lhs, GraphNode2D rhs) { return !(lhs > rhs); }
+bool operator<= (GraphNode2D lhs, GraphNode2D rhs);
 
-bool operator>= (GraphNode2D lhs, GraphNode2D rhs) { return !(lhs < rhs); }
+bool operator>= (GraphNode2D lhs, GraphNode2D rhs);
 
-bool operator== (GraphNode2D lhs, GraphNode2D rhs) {
-	if (lhs.Y() == rhs.Y())	return lhs.X() == rhs.X();
-	return false;
-}
+bool operator== (GraphNode2D lhs, GraphNode2D rhs);
 
-bool operator!= (GraphNode2D lhs, GraphNode2D rhs) { return !(lhs == rhs); }
+bool operator!= (GraphNode2D lhs, GraphNode2D rhs);
 
-
-
-// Public functions
-bool GraphNode2D::Link(GraphNode2D* &node) {
-	if (_nlink < 4) { // max links is 4
-		_links[_nlink++] = node;
-		return true;
-	}
-	return false;
-}
-
-// nullptrs are always at end, changing this means changing link() and links() as well
-bool GraphNode2D::Delink(GraphNode2D* &node) {
-	if (_nlink > 0) {
-		for (int i = 0; i < 4; ++i) { // max links is 4;
-			if (_links[i] == node) {
-				for (int x = i; x < 3; ++x) { // shift links if node is not last
-					_links[x] = _links[x + 1];
-				}
-				_links[3] = nullptr; // set last
-				--_nlink;
-				return true;
-			}
-		}
-	}
-	return false;
-}
-
-int GraphNode2D::Links(GraphNode2D ** &ret) {
-	ret = _links;
-	
-	for (int i = 0; (ret[i] != nullptr) && (i < _nlink); ++i) { // selection sort until first nullptr
-		GraphNode2D ** tmp = &ret[i];
-
-		for (int x = i + 1; x < _nlink; ++x) { // find smallest
-			if ((ret[x] != nullptr) && ((*ret[x]) < (**tmp))) tmp = &ret[x];
-		}
-
-		// swap regardless of tmp == ret[i], faster than a check 
-		GraphNode2D * tmp2;
-		tmp2 = *tmp;
-		ret[tmp - ret] = ret[i];
-		ret[i] = tmp2;
-	}
-
-	return _nlink;
-}
-
-int compareGraphNode2D(GraphNode2D &lhs, GraphNode2D &rhs) {
-	if (lhs > rhs) return 1;
-	else if (rhs > lhs) return -1;
-	else return 0;
-}
-
+int compareGraphNode2D(GraphNode2D &lhs, GraphNode2D &rhs);
 
 
 #endif // !2DGRAPHNODE_H

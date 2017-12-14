@@ -1,6 +1,8 @@
 /*
 	AVL Tree template
 
+	does not allow duplicates
+
 	Fall 2017
 
 	Velly Simeonov
@@ -38,12 +40,15 @@ protected:
 	/* comp function returns [-1,1] ex: comp(int a, int b) returns 1 if a>b, -1 if b>a, and 0 if a == b */
 	int(*comp)(T & lhs, T & rhs);
 
-	bool _allowDuplicates = false;
+//	bool _allowDuplicates = false;
 
 	AVLNode<T>* getRootPtr() { return (AVLNode<T>*) _rootNodePtr; }
 	void setRootPtr(AVLNode<T>* newRoot) { _rootNodePtr = (void*)newRoot; }
 
 private:
+	/* copy nodes */
+	AVLNode<T>* _copyTree(AVLNode<T>* root);
+
 	/* insert node into tree */
 	AVLNode<T>* _insert(AVLNode<T> * root, AVLNode<T> * newNode);
 
@@ -59,29 +64,35 @@ private:
 	/* locate node with target as data*/
 	AVLNode<T>* _findNode(AVLNode<T> * root, T &target);
 
+	/* resolves node depth */
 	void _depthResolution(AVLNode<T> * &root);
 
-	AVLNode<T>* _leftRotation(AVLNode<T> * unbalancedNode);
-	AVLNode<T>* _rightRotation(AVLNode<T> * unbalancedNode);
+	/* rotates tree from node left */
+	AVLNode<T>* _leftRotation(AVLNode<T> * node);
+
+	/* rotates tree from node right */
+	AVLNode<T>* _rightRotation(AVLNode<T> * node);
+
+	/* logic for AVL balance rotations */
 	void _balance(AVLNode<T> * & node);
-	int _balFactor(AVLNode<T> * node);
+
+	/* calculates balance factor of node */
+	int _balFactor(AVLNode<T> * node) const;
 
 public:
 	/* normal constructor */
-//	AVLTree(int compareFunction(T &lhs, T &rhs), bool duplicates = false): BinarySearchTree<T>(compareFunction,duplicates) { }
 	AVLTree(int compareFunction(T &lhs, T &rhs), bool duplicates = false) {
 		this->setRootPtr(nullptr);
 		this->_count = 0;
 		comp = compareFunction;
-		this->_allowDuplicates = duplicates;
+//		this->_allowDuplicates = duplicates;
 	}
 	/* copy constructor */
-//	AVLTree(const AVLTree &tree) : BinarySearchTree<T>(tree) { }
-	AVLTree(const AVLTree &tree) {
+	AVLTree(AVLTree &tree) {
 		this->setRootPtr(this->_copyTree(tree.getRootPtr()));
-		this->count = tree._count;
+		this->_count = tree._count;
 		this->comp = tree.comp;
-		this->_allowDuplicates = tree._allowDuplicates;
+//		this->_allowDuplicates = tree._allowDuplicates;
 	}
 
 	/* insert item to tree */
@@ -92,8 +103,9 @@ public:
 
 	/* get item*/
 	bool getEntry(T& item, T*& output);
-
-	void printTree();
+	
+	/* prints out depths of nodes in breadth order*/
+	void printBreadthOrderDepths();
 };
 
 /************************\
@@ -130,7 +142,7 @@ bool AVLTree<T>::getEntry(T& item, T*& output) {
 }
 
 _template
-void AVLTree<T>::printTree() {
+void AVLTree<T>::printBreadthOrderDepths() {
 	Queue<AVLNode<T>*> nodeQueue;
 	AVLNode<T> * tmp;
 
@@ -154,6 +166,18 @@ void AVLTree<T>::printTree() {
 \************************/
 
 _template
+AVLNode<T>* AVLTree<T>::_copyTree(AVLNode<T>* startNodePtr) {
+	AVLNode<T> * node = nullptr;
+	if (startNodePtr != nullptr) {
+		T* data = startNodePtr->getData();
+		node = new AVLNode<T>(data,
+			startNodePtr->getLeftPtr(),
+			startNodePtr->getRightPtr());
+	}
+	return node;
+}
+
+_template
 AVLNode<T>* AVLTree<T>::_insert(AVLNode<T> * root, AVLNode<T> * newNode) {
 	if (root == nullptr) {
 		++this->_count;
@@ -174,12 +198,14 @@ AVLNode<T>* AVLTree<T>::_insert(AVLNode<T> * root, AVLNode<T> * newNode) {
 			_balance(root);
 			return root;
 		}
-		else if (x == 0 && this->_allowDuplicates) {
+		
+/*		else if (x == 0 && this->_allowDuplicates) {
 			root->setRightPtr(_insert(root->getRightPtr(), newNode));
 			_depthResolution(root);
 			_balance(root);
 			return root;
 		}
+*/		
 		else return root;
 	}
 }
@@ -306,25 +332,42 @@ AVLNode<T> * AVLTree<T>::_rightRotation(AVLNode<T> * unbalancedNode) {
 
 _template
 void AVLTree<T>::_balance(AVLNode<T> * & node) {
+	AVLNode<T> * tmp;
 
 	if (_balFactor(node) > 1) {
 		if (_balFactor(node->getLeftPtr()) < 0) {
 			node->setLeftPtr(_leftRotation(node->getLeftPtr()));
+			tmp = node->getLeftPtr()->getLeftPtr();
+			 _depthResolution(tmp); // left rotation gurantees no nullptr
+			 tmp = node->getLeftPtr();
+			_depthResolution(tmp);
 		}
 		node = _rightRotation(node);
+		tmp = node->getRightPtr();
+		_depthResolution(tmp);
+		tmp = node;
+		_depthResolution(tmp);
 	}
 	else if (_balFactor(node) < -1) {
 		if (_balFactor(node->getRightPtr()) > 0) {
 			node->setRightPtr(_rightRotation(node->getRightPtr()));
+			tmp = node->getRightPtr()->getRightPtr();
+			_depthResolution(tmp); // right rotation guarantees no nullptr
+			tmp = node->getRightPtr();
+			_depthResolution(tmp);
 		}
 		node = _leftRotation(node);
+		tmp = node->getLeftPtr();
+		_depthResolution(tmp);
+		tmp = node;
+		_depthResolution(tmp);
 	}
 
 
 }
 
 _template
-int AVLTree<T>::_balFactor(AVLNode<T> * node) {
+int AVLTree<T>::_balFactor(AVLNode<T> * node) const {
 	int x = 0, y = 0;
 	if (node->getLeftPtr() != nullptr)
 		x = node->getLeftPtr()->_depth;

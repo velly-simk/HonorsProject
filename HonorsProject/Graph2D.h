@@ -1,10 +1,7 @@
 /*
 	Graph2D
 
-	Stores 2D Graph Nodes and 2D Graph Links.
-
-	Inserted Nodes are copied and independent from
-	scope at insertion.
+	Stores 2D Graph Nodes.
 
 	Velly Simeonov
 
@@ -24,10 +21,11 @@ private:
 public:
 	Graph2D() {	}
 	~Graph2D() { }
-	int insert(const GraphNode2D* & input);
-	int remove(const GraphNode2D* & input);
-	GraphNode2D* getNode(const int& index);
-	int nodeCount() { return _nodeCount; }
+	bool insert(GraphNode2D &input);
+	bool remove(GraphNode2D &input);
+	GraphNode2D* getNode(GraphNode2D &node);
+	int nodeCount() const { return _nodeCount; }
+	Queue<Queue<GraphNode2D*>*> breadthOrder();
 };
 
 #endif
