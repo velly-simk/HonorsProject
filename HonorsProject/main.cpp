@@ -25,7 +25,7 @@ void printObjects(Queue<Queue<GraphNode2D*>*> queue);
 int main(int argc, char *argv[])
 {
 	ifstream inFile;
-	inFile.open("t5.txt", ifstream::in);
+	inFile.open("t0.txt", ifstream::in);
 	char ** inputArr = nullptr, **inputArrCpy = nullptr;
 	int x, y;
 	Graph2D graph;
@@ -100,8 +100,25 @@ int main(int argc, char *argv[])
 	}
 	*/
 
+	//Clean up
+	while (!queue->isEmpty()) {
+		Queue<GraphNode2D*> *tmp;
+		queue->dequeue(tmp);
+		delete tmp;
+	}
+	delete queue;
+	
+	for (int i = 0; i < y; ++i) {
+		delete inputArr[i];
+		delete inputArrCpy[i];
+	}
 
+	delete inputArr;
+	delete inputArrCpy;
 
+	
+	// 2D Graph avl tree fails to deconstruct, has something to do with objects() method not properly copying the tree?
+	// need to also delete GraphNode2D but apparently they have been lost
 	getchar();
     return 0;
 }
