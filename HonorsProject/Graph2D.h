@@ -17,7 +17,8 @@
 class Graph2D {
 private:
 	AVLTree<GraphNode2D> nodes = AVLTree<GraphNode2D>(compareGraphNode2D);
-	int _arrSize, _nodeCount = 0;
+	int _nodeCount = 0;
+	int _recursiveTrace(GraphNode2D *node, AVLTree<GraphNode2D> &list, Queue<GraphNode2D*> *&object);
 public:
 	Graph2D() {	}
 	~Graph2D() { }
@@ -25,7 +26,7 @@ public:
 	bool remove(GraphNode2D &input);
 	GraphNode2D* getNode(GraphNode2D &node);
 	int nodeCount() const { return _nodeCount; }
-	Queue<Queue<GraphNode2D*>*> breadthOrder();
+	Queue<Queue<GraphNode2D*>*>* objects();
 };
 
 #endif

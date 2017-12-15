@@ -21,43 +21,33 @@ GraphNode2D* Graph2D::getNode(GraphNode2D &node) {
 	return tmp;
 }
 
-Queue<Queue<GraphNode2D*>*> Graph2D::breadthOrder() {
-	Queue<Queue<GraphNode2D*>*> outQueue;
+Queue<Queue<GraphNode2D*>*>* Graph2D::objects() {
+	AVLTree<GraphNode2D> all = nodes;
+	Queue<GraphNode2D*> *object;
+	Queue<Queue<GraphNode2D*>*>* output = new Queue<Queue<GraphNode2D*>*>();
+	GraphNode2D* piece;
 
-	Queue<GraphNode2D*> * objectQueue;
-
-	Queue<GraphNode2D*> intermediary;
-
-	AVLTree<GraphNode2D> allNodes = nodes; // copy AVL tree
-	GraphNode2D *tmp;
-
-	allNodes.getLeftMost(tmp); // get pointer to least value
-
-	GraphNode2D ** links;
-	int nlinks;
-	bool startFlag = tmp->getFlag();
-
-	while (!allNodes.isEmpty()) { // while there are still nodes
-		intermediary.enqueue(tmp); // start an object
-		objectQueue = new Queue<GraphNode2D*>();
-
-		while (!intermediary.isEmpty()) { // parse object
-			allNodes.remove(*tmp); // remove node from all nodes
-			intermediary.dequeue(tmp); // remove from queue
-
-			tmp->setFlag(!startFlag); // toggle flag
-
-			objectQueue->enqueue(tmp);
-
-			nlinks = tmp->Links(links); // get links data
-			for (int i = 0; i < nlinks; ++i) { // parse links into object queue
-				if (links[i]->getFlag() == startFlag) { // do not include parsed links
-					intermediary.enqueue(links[i]);
-				}
-			}
-			outQueue.enqueue(objectQueue); // que object into output
-		}
+	all.getLeftMost(piece);
+	while (piece != nullptr && !all.isEmpty()) {
+		object = new Queue<GraphNode2D*>;
+		_recursiveTrace(piece, all, object);
+		output->enqueue(object);
+		all.getLeftMost(piece);
 	}
+	return output;
+}
 
-	return outQueue;
+int Graph2D::_recursiveTrace(GraphNode2D *node, AVLTree<GraphNode2D> &list, Queue<GraphNode2D*> *&object) {
+	if (node == nullptr || node->getFlag() == true) {
+		return 0;
+	}
+	list.remove(*node);
+	object->enqueue(node);
+	node->setFlag(true);
+	GraphNode2D **links;
+	node->Links(links);
+	return _recursiveTrace(links[0], list, object) + _recursiveTrace(links[1], list, object)
+		+ _recursiveTrace(links[2],list, object) + _recursiveTrace(links[3], list, object) + 1;
+
+
 }

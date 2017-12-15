@@ -22,6 +22,9 @@ protected:
 	bool _allowDuplicates;
 
 private:
+	/* copy nodes */
+	BinaryNode<T>* _copyTree(BinaryNode<T>* root);
+
 	/* insert node into tree */
 	BinaryNode<T>* _insert(BinaryNode<T> * root, BinaryNode<T> * newNode);
 
@@ -101,6 +104,18 @@ bool BinarySearchTree<T>::getEntry(T& item, T*& output) {
 /************************\
 	Private Functions
 \************************/
+
+_template
+BinaryNode<T>* BinarySearchTree<T>::_copyTree(BinaryNode<T>* startNodePtr) {
+	BinaryNode<T> * node = nullptr;
+	if (startNodePtr != nullptr) {
+		T* data = startNodePtr->getData();
+		node = new BinaryNode<T>(data,
+			startNodePtr->getLeftPtr(),
+			startNodePtr->getRightPtr());
+	}
+	return node;
+}
 
 _template
 BinaryNode<T>* BinarySearchTree<T>::_insert(BinaryNode<T> * root, BinaryNode<T> * newNode) {

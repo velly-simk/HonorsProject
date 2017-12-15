@@ -220,18 +220,20 @@ AVLNode<T>* AVLTree<T>::_removeNode(AVLNode<T> * root, T &target, bool &success)
 
 	if (x > 0) {
 		root->setRightPtr(_removeNode(root->getRightPtr(), target, success));
-		_depthResolution(root);
-		_balance(root);
+			_depthResolution(root);
+			_balance(root);
 	}
 	else if (x < 0) {
 		root->setLeftPtr(_removeNode(root->getLeftPtr(), target, success));
-		_depthResolution(root);
-		_balance(root);
+			_depthResolution(root);
+			_balance(root);
 	}
 	else {
 		root = _deleteNode(root);
-		_depthResolution(root);
-		_balance(root);
+		if (root != nullptr) {
+			_depthResolution(root);
+			_balance(root);
+		}
 		success = true;
 		--_count;
 	}

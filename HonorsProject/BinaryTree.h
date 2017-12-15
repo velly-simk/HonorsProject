@@ -169,12 +169,13 @@ int BinaryTree<T>::breadthOrder(Queue<T*> &queue, const bool &rightFirst) const 
 
 _template
 void BinaryTree<T>::getLeftMost(T* &item) const {
-	BinaryNode<T>* nodePtr = getRootPtr(), *last;
+	BinaryNode<T>* nodePtr = getRootPtr(), *last = nullptr;
 
 	while (nodePtr != nullptr) {
 		last = nodePtr;
 		nodePtr = nodePtr->getLeftPtr();
 	}
+	if (last != nullptr) item = last->getData();
 }
 
 _template
